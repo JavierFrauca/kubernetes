@@ -2,6 +2,14 @@
 # Creado para Windows 11 con Docker Desktop
 # Version: 2.0 - Interactiva y Mejorada
 
+# ====================================
+# Acerca de este script
+# Proyecto: Scripts y utilidades para Kubernetes
+# Autor: JavierFrauca (https://github.com/JavierFrauca)
+# Repositorio: https://github.com/JavierFrauca/kubernetes
+# Licencia: MIT
+# ====================================
+
 # Funcion para mostrar banner ASCII
 function Show-KubernetesBanner {
     Clear-Host
@@ -164,7 +172,8 @@ function Show-MainMenu {
     Write-Host "3. Ver Clusters Existentes" -ForegroundColor White
     Write-Host "4. Eliminar Cluster" -ForegroundColor White
     Write-Host "5. Comandos Comunes" -ForegroundColor White
-    Write-Host "6. Salir" -ForegroundColor White
+    Write-Host "6. Acerca de" -ForegroundColor White
+    Write-Host "7. Salir" -ForegroundColor White
     Write-Host ""
     Write-Host "================================================================================" -ForegroundColor DarkGray
     Write-Host ""
@@ -740,6 +749,27 @@ function Show-ClusterDetails {
     Read-Host
 }
 
+# Funcion para mostrar informacion acerca del script
+function Show-AboutInfo {
+    Clear-Host
+    Show-KubernetesBanner
+    Write-Host "ACERCA DE ESTE SCRIPT" -ForegroundColor Cyan
+    Write-Host "======================" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "Este script interactivo te permite configurar, gestionar y eliminar clusters locales de Kubernetes en Windows 11 usando Docker Desktop." -ForegroundColor White
+    Write-Host "Funciones principales:" -ForegroundColor Yellow
+    Write-Host "- Verificar requisitos y configuraciones del sistema" -ForegroundColor Gray
+    Write-Host "- Crear clusters personalizados con diferentes nodos y puertos" -ForegroundColor Gray
+    Write-Host "- Listar y eliminar clusters existentes" -ForegroundColor Gray
+    Write-Host "- Acceso rapido a comandos comunes de Kubernetes" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Para mas informacion, visita el repositorio en GitHub:" -ForegroundColor Cyan
+    Write-Host "   https://github.com/JavierFrauca/kubernetes" -ForegroundColor White
+    Write-Host "Licencia: MIT" -ForegroundColor Gray
+    Write-Host "Presiona Enter para volver al menu principal..." -ForegroundColor DarkGray
+    Read-Host | Out-Null
+}
+
 # Funcion principal
 function Main {
     # Verificar que estamos en Windows
@@ -750,7 +780,7 @@ function Main {
     
     while ($true) {
         Show-MainMenu
-        $choice = Read-Host "Selecciona una opcion (1-6)"
+        $choice = Read-Host "Selecciona una opcion (1-7)"
         
         switch ($choice) {
             "1" { Show-SystemChecks }
@@ -758,14 +788,15 @@ function Main {
             "3" { Show-ExistingClusters }
             "4" { Remove-KubernetesCluster }
             "5" { Show-CommonCommands }
-            "6" {
+            "6" { Show-AboutInfo }
+            "7" {
                 Write-Host ""
                 Write-Host "Gracias por usar el configurador de Kubernetes!" -ForegroundColor Green
                 Write-Host "Que tengas un excelente dia desarrollando!" -ForegroundColor Yellow
                 exit 0
             }
             default {
-                Write-Host "[ERROR] Opcion no valida. Por favor selecciona 1-6." -ForegroundColor Red
+                Write-Host "[ERROR] Opcion no valida. Por favor selecciona 1-7." -ForegroundColor Red
                 Start-Sleep -Seconds 2
             }
         }
