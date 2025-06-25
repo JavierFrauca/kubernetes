@@ -723,30 +723,78 @@ function Show-ClusterDetails {
     param(
         [string]$ClusterName
     )
-    Clear-Host
-    Show-KubernetesBanner
-    Write-Host "DETALLE DEL CLUSTER: $ClusterName" -ForegroundColor Cyan
-    Write-Host "===============================" -ForegroundColor DarkGray
-    Write-Host ""
-    Write-Host "NODOS:" -ForegroundColor Yellow
-    kubectl get nodes
-    Write-Host ""
-    Write-Host "DEPLOYMENTS (con replicas e imagen):" -ForegroundColor Yellow
-    kubectl get deployments -A -o wide
-    Write-Host ""
-    Write-Host "PODS (con imagen):" -ForegroundColor Yellow
-    kubectl get pods -A -o wide
-    Write-Host ""
-    Write-Host "SERVICIOS:" -ForegroundColor Yellow
-    kubectl get svc -A -o wide
-    Write-Host ""
-    Write-Host "IMAGENES USADAS EN LOS PODS:" -ForegroundColor Yellow
-    $pods = kubectl get pods -A -o json | ConvertFrom-Json
-    $images = $pods.items | ForEach-Object { $_.spec.containers | ForEach-Object { $_.image } } | Sort-Object -Unique
-    foreach ($img in $images) { Write-Host $img }
-    Write-Host ""
-    Write-Host "Presiona Enter para volver"
-    Read-Host
+    while ($true) {
+        Clear-Host
+        Show-KubernetesBanner
+        Write-Host "DETALLE DEL CLUSTER: $ClusterName" -ForegroundColor Cyan
+        Write-Host "===============================" -ForegroundColor DarkGray
+        Write-Host ""
+        Write-Host "1. Ver informacion del cluster" -ForegroundColor White
+        Write-Host "2. Instalar servidor Telepresence" -ForegroundColor White
+        Write-Host "3. Volver" -ForegroundColor White
+        Write-Host ""
+        $opt = Read-Host "Selecciona una opcion (1-3)"
+        switch ($opt) {
+            "1" {
+                # Mostrar info actual del cluster
+                Write-Host "NODOS:" -ForegroundColor Yellow
+                kubectl get nodes
+                Write-Host ""
+                Write-Host "DEPLOYMENTS (con replicas e imagen):" -ForegroundColor Yellow
+                kubectl get deployments -A -o wide
+                Write-Host ""
+                Write-Host "PODS (con imagen):" -ForegroundColor Yellow
+                kubectl get pods -A -o wide
+                Write-Host ""
+                Write-Host "SERVICIOS:" -ForegroundColor Yellow
+                kubectl get svc -A -o wide
+                Write-Host ""
+                Write-Host "IMAGENES USADAS EN LOS PODS:" -ForegroundColor Yellow
+                $pods = kubectl get pods -A -o json | ConvertFrom-Json
+                $images = $pods.items | ForEach-Object { $_.spec.containers | ForEach-Object { $_.image } } | Sort-Object -Unique
+                foreach ($img in $images) { Write-Host $img }
+                Write-Host ""
+                Write-Host "Presiona Enter para volver"
+                Read-Host | Out-Null
+            }
+            "2" {
+                Install-TelepresenceServer
+                Write-Host "Presiona Enter para volver"
+                Read-Host | Out-Null
+            }
+            "3" {
+                return
+            }
+            default {
+                Write-Host "Opcion no valida."
+                Start-Sleep -Seconds 1
+            }
+        }
+    }
+}
+
+function Install-TelepresenceServer {
+    Write-Host "Instalando servidor Telepresence (Traffic Manager)..." -ForegroundColor Yellow
+    # Verificar Helm
+    $helmCmd = Get-Command helm -ErrorAction SilentlyContinue
+    if (-not $helmCmd) {
+        Write-Host "[ERROR] Helm no está instalado. No se puede instalar Telepresence." -ForegroundColor Red
+        return
+    }
+    # Agregar repo de Telepresence si no existe
+    $repos = helm repo list | Select-String "datawire"
+    if (-not $repos) {
+        helm repo add datawire https://app.getambassador.io
+    }
+    helm repo update
+    # Instalar Traffic Manager
+    helm upgrade --install traffic-manager datawire/telepresence --namespace ambassador --create-namespace
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "[OK] Telepresence Traffic Manager instalado correctamente." -ForegroundColor Green
+        Write-Host "Puedes conectar un cliente Telepresence externo a este cluster." -ForegroundColor Cyan
+    } else {
+        Write-Host "[ERROR] Falló la instalación de Telepresence." -ForegroundColor Red
+    }
 }
 
 # Funcion para mostrar informacion acerca del script
